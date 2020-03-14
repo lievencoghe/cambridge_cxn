@@ -1,0 +1,10 @@
+{
+  "domain": "cambridge_cxn",
+  "name": "Cambridge Audio CXN",
+  "documentation": "https://github.com/lievencoghe/cambridge_cxn",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [
+    "@lievencoghe"
+  ]
+}
