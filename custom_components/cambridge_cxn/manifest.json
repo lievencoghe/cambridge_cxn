@@ -2,9 +2,11 @@
   "domain": "cambridge_cxn",
   "name": "Cambridge Audio CXN",
   "documentation": "https://github.com/lievencoghe/cambridge_cxn",
+  "issue_tracker": "https://github.com/lievencoghe/cambridge_cxn/issues",
   "requirements": [],
   "dependencies": [],
   "codeowners": [
     "@lievencoghe"
-  ]
+  ],
+  "version": "0.4"
 }
