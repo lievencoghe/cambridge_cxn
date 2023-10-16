@@ -403,7 +403,7 @@ class CambridgeCXNDevice(MediaPlayerEntity):
             
     def select_sound_mode(self, sound_mode):
         reverse_sound_mode = self._sound_mode_list_reverse[sound_mode]
-        self._command("/smoip/zone/state?audio_output=" + reverse_sound_mode) #Not working yet, gives error Can't select Bluetooth output without specifying a device
+        self._command("/smoip/zone/audio/output?zone=ZONE1&id=" + reverse_sound_mode)
 
     def set_volume_level(self, volume):
         vol_str = "/smoip/zone/state?volume_percent=" + str(int(volume * 100))
