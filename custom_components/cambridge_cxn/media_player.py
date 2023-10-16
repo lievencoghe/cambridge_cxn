@@ -34,7 +34,7 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON, STATE_PAUSED, STATE_PLAYING, STATE_IDLE, STATE_STANDBY
 import homeassistant.helpers.config_validation as cv
 
-__version__ = "0.6"
+__version__ = "0.6.1"
 
 _LOGGER = logging.getLogger(__name__)
 
