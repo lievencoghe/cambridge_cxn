@@ -20,6 +20,7 @@ from homeassistant.components.media_player.const import (
     SUPPORT_PREVIOUS_TRACK,
     SUPPORT_NEXT_TRACK,
     SUPPORT_SELECT_SOURCE,
+    SUPPORT_SELECT_SOUND_MODE,
     SUPPORT_TURN_OFF,
     SUPPORT_TURN_ON,
     SUPPORT_VOLUME_MUTE,
@@ -33,7 +34,7 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON, STATE_PAUSED, STATE_PLAYING, STATE_IDLE, STATE_STANDBY
 import homeassistant.helpers.config_validation as cv
 
-__version__ = "0.6"
+__version__ = "0.6b"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ SUPPORT_CXN = (
     | SUPPORT_PREVIOUS_TRACK
     | SUPPORT_NEXT_TRACK
     | SUPPORT_SELECT_SOURCE
+    | SUPPORT_SELECT_SOUND_MODE
     | SUPPORT_TURN_OFF
     | SUPPORT_TURN_ON
     | SUPPORT_VOLUME_STEP
@@ -59,6 +61,7 @@ SUPPORT_CXN_PREAMP = (
     | SUPPORT_PREVIOUS_TRACK
     | SUPPORT_NEXT_TRACK
     | SUPPORT_SELECT_SOURCE
+    | SUPPORT_SELECT_SOUND_MODE
     | SUPPORT_TURN_OFF
     | SUPPORT_TURN_ON
     | SUPPORT_VOLUME_MUTE
@@ -102,9 +105,13 @@ class CambridgeCXNDevice(MediaPlayerEntity):
         self._name = name
         self._pwstate = "NETWORK"
         self._should_setup_sources = True
+        self._should_setup_outputs = True
         self._source_list = {}
         self._source_list_reverse = {}
         self._state = STATE_OFF
+        self._sound_mode_list = {}
+        self._sound_mode_list_reverse: {}
+        self._audiooutput = ""
         self._volume = 0
         self._artwork_url = None
         self._preamp_mode = False
@@ -143,6 +150,23 @@ class CambridgeCXNDevice(MediaPlayerEntity):
                 self._source_list_reverse[configured_name] = source
 
         self._should_setup_sources = False
+        
+    def _setup_outputs(self):
+        if self._should_setup_outputs:
+            _LOGGER.debug("Setting up CXN outputs")
+            outputs = json.loads(self._command("/smoip/zone/audio/output"))["data"]
+            outputs2 = outputs.get("outputs")
+            self._sound_mode_list = {}
+            self._sound_mode_list_reverse = {}
+
+            for i in outputs2:
+                _LOGGER.debug("Setting up CXN outputs... %s", i["id"])
+                output = i["id"]
+                configured_name = i["name"]
+                self._sound_mode_list[output] = configured_name
+                self._sound_mode_list_reverse[configured_name] = output
+
+        self._should_setup_outputs = False
 
     def set_shuffle(self, shuffle):
         action = "off"
@@ -186,6 +210,7 @@ class CambridgeCXNDevice(MediaPlayerEntity):
 
         self._preamp_mode = zonestatedata["pre_amp_mode"]
         self._mediasource = zonestatedata["source"]
+        self._audiooutput = zonestatedata["audio_output"]
 
         if self._preamp_mode:
             self._muted = zonestatedata["mute"]
@@ -238,13 +263,13 @@ class CambridgeCXNDevice(MediaPlayerEntity):
             self._repeat_mode = "off"
 
         self._setup_sources()
+        self._setup_outputs()
 
     def _getZoneState(self):
         return json.loads(self._command("/smoip/zone/state"))
 
     def _getPlayState(self):
         return json.loads(self._command("/smoip/zone/play_state"))
-
 
     def _getPowerState(self):
         return json.loads(self._command("/smoip/system/power"))
@@ -256,6 +281,14 @@ class CambridgeCXNDevice(MediaPlayerEntity):
     @property
     def is_volume_muted(self):
         return self._muted
+ 
+    @property 
+    def sound_mode_list(self):
+        return list(self._sound_mode_list.values())
+        
+    @property        
+    def sound_mode(self):
+        return self._sound_mode_list[self._audiooutput]
 
     @property
     def name(self):
@@ -279,7 +312,7 @@ class CambridgeCXNDevice(MediaPlayerEntity):
             elif self._state == "stop":
                 return STATE_IDLE
             else:
-                return STATE_ON
+                return STATE_OFF
         return None
 
     @property
@@ -321,9 +354,6 @@ class CambridgeCXNDevice(MediaPlayerEntity):
     def volume_level(self):
         return self._volume
 
-    def mute_volume(self, mute):
-        self._command("/smoip/zone/state?mute=" + ("true" if mute else "false"))
-
     @property
     def source(self):
         return self._source_list[self._mediasource]
@@ -359,6 +389,10 @@ class CambridgeCXNDevice(MediaPlayerEntity):
             self._command("/smoip/zone/state?source=" + reverse_source)
         else:
             self._command("/smoip/zone/recall_preset?preset=" + reverse_source)
+            
+    def select_sound_mode(self, sound_mode):
+        reverse_sound_mode = self._sound_mode_list_reverse[sound_mode]
+        self._command("/smoip/zone/state?audio_output=" + reverse_sound_mode) #Not working yet, gives error Can't select Bluetooth output without specifying a device
 
     def set_volume_level(self, volume):
         vol_str = "/smoip/zone/state?volume_percent=" + str(int(volume * 100))
