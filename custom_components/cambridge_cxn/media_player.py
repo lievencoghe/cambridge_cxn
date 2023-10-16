@@ -311,8 +311,14 @@ class CambridgeCXNDevice(MediaPlayerEntity):
                 return STATE_PAUSED
             elif self._state == "stop":
                 return STATE_IDLE
+            elif self._state == "ready": #state when device is selected as cast output, but nothing is playing yet
+                return STATE_IDLE
+            elif self._state == "not_ready": #state when Tidal is selected as input but nothing is playing yet
+                return STATE_IDLE
+            elif self._state == "no_signal": #state when any input doesn't give a signal. Default state for Phono input when the record is not playing
+                return STATE_IDLE
             else:
-                return STATE_OFF
+                return STATE_OFF #so the device doesn't stay 'On' when eco-mode is enabled
         return None
 
     @property
