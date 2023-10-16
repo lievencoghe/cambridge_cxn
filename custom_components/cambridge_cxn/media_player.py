@@ -74,6 +74,7 @@ SUPPORT_CXN_PREAMP = (
 
 DEFAULT_NAME = "Cambridge Audio CXN"
 DEVICE_CLASS = "receiver"
+MEDIA_CONTENT_TYPE = "music"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -367,6 +368,10 @@ class CambridgeCXNDevice(MediaPlayerEntity):
     @property
     def device_class(self):
         return DEVICE_CLASS
+        
+    @property
+    def media_content_type(self):
+        return MEDIA_CONTENT_TYPE
 
     @property
     def shuffle(self):
