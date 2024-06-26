@@ -1,7 +1,7 @@
 {
   "domain": "cambridge_cxn",
   "name": "Cambridge Audio CXN",
-  "version": "0.5",
+  "version": "0.8",
   "integration_type": "entity",
   "documentation": "https://github.com/lievencoghe/cambridge_cxn",
   "issue_tracker": "https://github.com/lievencoghe/cambridge_cxn/issues",

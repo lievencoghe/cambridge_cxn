@@ -11,8 +11,13 @@ import urllib.request
 import voluptuous as vol
 import homeassistant.util.dt as dt_util
 
-from homeassistant.components.media_player import MediaPlayerEntity, PLATFORM_SCHEMA
+from homeassistant.components.media_player import (
+    PLATFORM_SCHEMA,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature
+)
 
+"""
 from homeassistant.components.media_player.const import (
     SUPPORT_PAUSE,
     SUPPORT_PLAY,
@@ -29,45 +34,47 @@ from homeassistant.components.media_player.const import (
     SUPPORT_REPEAT_SET,
     SUPPORT_SEEK
 )
+"""
 
 from homeassistant.const import CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON, STATE_PAUSED, STATE_PLAYING, STATE_IDLE, STATE_STANDBY
 import homeassistant.helpers.config_validation as cv
 
-__version__ = "0.6"
+__version__ = "0.8"
 
 _LOGGER = logging.getLogger(__name__)
 
 SUPPORT_CXN = (
-    SUPPORT_PAUSE
-    | SUPPORT_PLAY
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_TURN_OFF
-    | SUPPORT_TURN_ON
-    | SUPPORT_VOLUME_STEP
-    | SUPPORT_SHUFFLE_SET
-    | SUPPORT_REPEAT_SET
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.SHUFFLE_SET
+    | MediaPlayerEntityFeature.REPEAT_SET
+    | MediaPlayerEntityFeature.SEEK
 )
 
 SUPPORT_CXN_PREAMP = (
-    SUPPORT_PAUSE
-    | SUPPORT_PLAY
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_TURN_OFF
-    | SUPPORT_TURN_ON
-    | SUPPORT_VOLUME_MUTE
-    | SUPPORT_VOLUME_STEP
-    | SUPPORT_VOLUME_SET
-    | SUPPORT_SHUFFLE_SET
-    | SUPPORT_REPEAT_SET
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.SHUFFLE_SET
+    | MediaPlayerEntityFeature.REPEAT_SET
+    | MediaPlayerEntityFeature.SEEK
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.VOLUME_SET
 )
+
 
 DEFAULT_NAME = "Cambridge Audio CXN"
 DEVICE_CLASS = "receiver"
@@ -177,7 +184,20 @@ class CambridgeCXNDevice(MediaPlayerEntity):
     def media_previous_track(self):
         self._command("/smoip/zone/play_control?skip_track=-1")
 
+    def isConnected(self):
+        try:
+            powerstate = self._getPowerState()
+            if "data" in powerstate:
+                return True
+        except:
+            pass
+        return False
+
     def update(self):
+        if not self.isConnected():
+            _LOGGER.error("Cambridge CXN is not connected")
+            return
+
         powerstate = self._getPowerState()
         self._pwstate = powerstate["data"]["power"]
 
