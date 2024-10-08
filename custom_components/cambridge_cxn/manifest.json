@@ -1,12 +1,12 @@
 {
   "domain": "cambridge_cxn",
   "name": "Cambridge Audio CXN",
-  "version": "0.6.1",
+  "version": "0.8s",
   "integration_type": "entity",
-  "documentation": "https://github.com/lievencoghe/cambridge_cxn",
-  "issue_tracker": "https://github.com/lievencoghe/cambridge_cxn/issues",
+  "documentation": "https://github.com/sirjohndoe/cambridge_cxn",
+  "issue_tracker": "https://github.com/sirjohndoe/cambridge_cxn/issues",
   "requirements": [],
   "dependencies": [],
-  "codeowners": ["@lievencoghe"],
+  "codeowners": ["@sirjohndoe"],
   "iot_class": "local_polling"
 }
