@@ -1,4 +1,13 @@
-# cambridge_cxn
+## Changes in this fork
+
+- Speaker select. Soundmodes are used in Home Assistant for this.
+- More idle states
+- Can be added through HACS
+
+The 's' in the version number denotes that I've added the above changes to whichever version lievencoghe has released.
+
+# Original readme by lievencoghe
+
 Custom component for Home Assistant that integrates the Cambridge Audio CXN/CXNv2 network media player.
 This integration will add a new Media Player entity to your Home Assistant installation.
 
