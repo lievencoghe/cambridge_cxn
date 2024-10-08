@@ -11,8 +11,13 @@ import urllib.request
 import voluptuous as vol
 import homeassistant.util.dt as dt_util
 
-from homeassistant.components.media_player import MediaPlayerEntity, PLATFORM_SCHEMA
+from homeassistant.components.media_player import (
+    PLATFORM_SCHEMA,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature
+)
 
+"""
 from homeassistant.components.media_player.const import (
     SUPPORT_PAUSE,
     SUPPORT_PLAY,
@@ -30,46 +35,47 @@ from homeassistant.components.media_player.const import (
     SUPPORT_REPEAT_SET,
     SUPPORT_SEEK
 )
+"""
 
 from homeassistant.const import CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON, STATE_PAUSED, STATE_PLAYING, STATE_IDLE, STATE_STANDBY
 import homeassistant.helpers.config_validation as cv
 
-__version__ = "0.6.1"
+__version__ = "0.8s"
 
 _LOGGER = logging.getLogger(__name__)
 
 SUPPORT_CXN = (
-    SUPPORT_PAUSE
-    | SUPPORT_PLAY
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_SELECT_SOUND_MODE
-    | SUPPORT_TURN_OFF
-    | SUPPORT_TURN_ON
-    | SUPPORT_VOLUME_STEP
-    | SUPPORT_SHUFFLE_SET
-    | SUPPORT_REPEAT_SET
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.SELECT_SOUND_MODE
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.SHUFFLE_SET
+    | MediaPlayerEntityFeature.REPEAT_SET
+    | MediaPlayerEntityFeature.SEEK
 )
 
 SUPPORT_CXN_PREAMP = (
-    SUPPORT_PAUSE
-    | SUPPORT_PLAY
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_SELECT_SOUND_MODE
-    | SUPPORT_TURN_OFF
-    | SUPPORT_TURN_ON
-    | SUPPORT_VOLUME_MUTE
-    | SUPPORT_VOLUME_STEP
-    | SUPPORT_VOLUME_SET
-    | SUPPORT_SHUFFLE_SET
-    | SUPPORT_REPEAT_SET
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.SELECT_SOUND_MODE
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.SHUFFLE_SET
+    | MediaPlayerEntityFeature.REPEAT_SET
+    | MediaPlayerEntityFeature.SEEK
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.VOLUME_SET
 )
 
 DEFAULT_NAME = "Cambridge Audio CXN"
@@ -201,8 +207,21 @@ class CambridgeCXNDevice(MediaPlayerEntity):
 
     def media_previous_track(self):
         self._command("/smoip/zone/play_control?skip_track=-1")
+        
+    def isConnected(self):
+        try:
+            powerstate = self._getPowerState()
+            if "data" in powerstate:
+                return True
+        except:
+            pass
+        return False
 
     def update(self):
+        if not self.isConnected():
+            _LOGGER.error("Cambridge CXN is not connected")
+            return
+            
         powerstate = self._getPowerState()
         self._pwstate = powerstate["data"]["power"]
 
@@ -319,7 +338,7 @@ class CambridgeCXNDevice(MediaPlayerEntity):
             elif self._state == "no_signal": #state when any input doesn't give a signal. Default state for Phono input when the record is not playing
                 return STATE_IDLE
             else:
-                return STATE_OFF #so the device doesn't stay 'On' when eco-mode is enabled
+                return STATE_ON #eco-mode must be disabled on Evo 150 and similar or else the entity will stay on
         return None
 
     @property
@@ -386,20 +405,28 @@ class CambridgeCXNDevice(MediaPlayerEntity):
 
     def select_source(self, source):
         reverse_source = self._source_list_reverse[source]
-        if reverse_source in [
-            "AIRPLAY",
-            "CAST",
-            "IR",
-            "MEDIA_PLAYER",
-            "SPDIF_COAX",
-            "SPDIF_TOSLINK",
-            "SPOTIFY",
-            "USB_AUDIO",
-            "ROON"
-        ]:
-            self._command("/smoip/zone/state?source=" + reverse_source)
-        else:
-            self._command("/smoip/zone/recall_preset?preset=" + reverse_source)
+        self._command("/smoip/zone/state?source=" + reverse_source)
+#        if reverse_source in [
+#            "AIRPLAY",
+#            "ANALOGUE1",
+#            "ANALOGUE2",
+#            "ANALOGUE3",
+#            "BLUETOOTH",
+#            "CAST",
+#            "HDMI1",
+#            "IR",
+#            "MEDIA_PLAYER",
+#            "SPDIF_COAX",
+#            "SPDIF_TOSLINK",
+#            "SPDIF_TOSLINK2",
+#            "SPOTIFY",
+#            "USB_AUDIO",
+#            "ROON",
+#            "TIDAL"
+#        ]:
+#            self._command("/smoip/zone/state?source=" + reverse_source)
+#        else:
+#            self._command("/smoip/zone/recall_preset?preset=" + reverse_source)
             
     def select_sound_mode(self, sound_mode):
         reverse_sound_mode = self._sound_mode_list_reverse[sound_mode]
