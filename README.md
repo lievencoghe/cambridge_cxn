@@ -4,7 +4,7 @@
 - More idle states
 - Can be added through HACS
 
-The 's' in the version number denotes that I've added the above changes to whichever version lievencoghe has released.
+The '.1' at the end of the version number denotes that I've added the above changes to whichever version lievencoghe has released.
 
 # Original readme by lievencoghe
 
