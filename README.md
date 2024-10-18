@@ -1,3 +1,8 @@
+__This integration is deprecated!!__
+
+Since Sept 2024 there is a native integration for Cambridge Audio streamers. See here: https://www.home-assistant.io/integrations/cambridge_audio
+I advise you to use this integration instead of mine as it will be maintained much better.
+
 # cambridge_cxn
 Custom component for Home Assistant that integrates the Cambridge Audio CXN/CXNv2 network media player.
 This integration will add a new Media Player entity to your Home Assistant installation.
